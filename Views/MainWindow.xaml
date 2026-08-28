@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="The Movies"
         Height="550"
-        Width="600">
+        Width="500">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
@@ -11,25 +11,51 @@
 
     <Grid Margin="30">
 
-        
-        <StackPanel Visibility="{Binding IsMainMenuVisible,
-                                  Converter={StaticResource BoolToVisibility}}">
 
-            <TextBlock Text="THE MOVIES"
-                       FontSize="30"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,30"/>
+        <Grid Visibility="{Binding IsMainMenuVisible,
+                    Converter={StaticResource BoolToVisibility}}">
 
-            <Button Content="Registrer film"
-                    Height="40"
-                    Margin="0,0,0,10"
-                    Command="{Binding ShowRegisterMovieCommand}"/>
+            <Image Source="/Images/cinema.jpg"
+           Stretch="UniformToFill"
+           Opacity="0.45"/>
 
-            <Button Content="Filmoversigt"
-                    Height="40"
-                    Command="{Binding ShowMovieOverviewCommand}"/>
+            <Rectangle Fill="Black"
+               Opacity="0.55"/>
 
-        </StackPanel>
+            <StackPanel VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Width="350">
+
+                <TextBlock Text="THE MOVIES"
+                   FontSize="40"
+                   FontWeight="Bold"
+                   Foreground="White"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,30"/>
+
+                <Button Content="Registrer film"
+                Height="45"
+                Margin="0,0,0,10"
+                Command="{Binding ShowRegisterMovieCommand}"/>
+
+                <Button Content="Filmoversigt"
+                Height="45"
+                Margin="0,0,0,10"
+                Command="{Binding ShowMovieOverviewCommand}"/>
+
+                <Button Content="Opret forestilling"
+                Height="45"
+                Margin="0,0,0,10"
+                Command="{Binding ShowCreateScreeningCommand}"/>
+
+                <Button Content="Program"
+                Height="45"
+                Command="{Binding ShowProgramCommand}"/>
+
+            </StackPanel>
+
+        </Grid>
+
 
         <StackPanel Visibility="{Binding IsRegisterMovieVisible,
                                   Converter={StaticResource BoolToVisibility}}">
@@ -43,15 +69,30 @@
             <TextBox Text="{Binding Movie.Title}"
                      Margin="0,5,0,15"/>
 
-            <TextBlock Text="Varighed"/>
+
+            <TextBlock Text="Varighed i minutter"/>
 
             <TextBox Text="{Binding Movie.Duration}"
                      Margin="0,5,0,15"/>
 
+
             <TextBlock Text="Genre"/>
 
             <TextBox Text="{Binding Movie.Genre}"
-                     Margin="0,5,0,20"/>
+                     Margin="0,5,0,15"/>
+
+
+            <TextBlock Text="Instruktør"/>
+
+            <TextBox Text="{Binding Movie.Director}"
+                     Margin="0,5,0,15"/>
+
+
+            <TextBlock Text="Premieredato"/>
+
+            <DatePicker SelectedDate="{Binding Movie.PremiereDate}"
+                        Margin="0,5,0,20"/>
+
 
             <Button Content="Registrer film"
                     Height="40"
@@ -65,7 +106,6 @@
         </StackPanel>
 
 
-        
         <StackPanel Visibility="{Binding IsMovieOverviewVisible,
                                   Converter={StaticResource BoolToVisibility}}">
 
@@ -74,9 +114,140 @@
                        Margin="0,0,0,20"/>
 
             <DataGrid ItemsSource="{Binding Movies}"
-                      AutoGenerateColumns="True"
-                      Height="250"
-                      Margin="0,0,0,20"/>
+          AutoGenerateColumns="False"
+          Height="300"
+          Margin="0,0,0,20">
+
+                <DataGrid.Columns>
+
+                    <DataGridTextColumn Header="Titel"
+                            Binding="{Binding Title}"/>
+
+                    <DataGridTextColumn Header="Varighed"
+                            Binding="{Binding Duration}"/>
+
+                    <DataGridTextColumn Header="Genre"
+                            Binding="{Binding Genre}"/>
+
+                    <DataGridTextColumn Header="Instruktør"
+                            Binding="{Binding Director}"/>
+
+                    <DataGridTextColumn Header="Premieredato"
+                            Binding="{Binding PremiereDate,
+                                              StringFormat=dd-MM-yyyy}"/>
+
+                </DataGrid.Columns>
+
+            </DataGrid>
+
+            <Button Content="Tilbage"
+                    Height="40"
+                    Command="{Binding BackToMenuCommand}"/>
+
+        </StackPanel>
+
+
+        
+        <StackPanel Visibility="{Binding IsCreateScreeningVisible,
+                                  Converter={StaticResource BoolToVisibility}}">
+
+            <TextBlock Text="Opret forestilling"
+                       FontSize="25"
+                       Margin="0,0,0,20"/>
+
+
+            <TextBlock Text="Vælg film"/>
+
+            <ComboBox ItemsSource="{Binding Movies}"
+                      SelectedItem="{Binding SelectedMovie}"
+                      DisplayMemberPath="Title"
+                      Margin="0,5,0,15"/>
+
+
+            <TextBlock Text="Vælg biograf"/>
+
+            <ComboBox ItemsSource="{Binding Cinemas}"
+          SelectedItem="{Binding SelectedCinema}"
+          Margin="0,5,0,15">
+
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                <Run Text="{Binding Name}"/>
+                <Run Text=" - "/>
+                <Run Text="{Binding City}"/>
+                        </TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+
+            </ComboBox>
+
+
+            <TextBlock Text="Vælg biografsal"/>
+
+            <ComboBox ItemsSource="{Binding SelectedCinema.TheaterHalls}"
+                      SelectedItem="{Binding SelectedTheaterHall}"
+                      DisplayMemberPath="Name"
+                      Margin="0,5,0,15"/>
+
+
+            <TextBlock Text="Vælg startdato"/>
+
+            <DatePicker SelectedDate="{Binding SelectedStartTime}"
+                        Margin="0,5,0,15"/>
+
+
+            <TextBlock Text="Starttidspunkt"/>
+
+            <TextBox Text="{Binding SelectedStartTime,
+                                     StringFormat=HH:mm}"
+                     Margin="0,5,0,20"/>
+
+
+            <Button Content="Opret forestilling"
+                    Height="40"
+                    Margin="0,0,0,10"
+                    Command="{Binding CreateScreeningCommand}"/>
+
+            <Button Content="Tilbage"
+                    Height="40"
+                    Command="{Binding BackToMenuCommand}"/>
+
+        </StackPanel>
+
+
+
+        <StackPanel Visibility="{Binding IsProgramVisible,
+                                  Converter={StaticResource BoolToVisibility}}">
+
+            <TextBlock Text="Program"
+                       FontSize="25"
+                       Margin="0,0,0,20"/>
+
+            <DataGrid ItemsSource="{Binding Screenings}"
+                      AutoGenerateColumns="False"
+                      Height="300"
+                      Margin="0,0,0,20">
+
+                <DataGrid.Columns>
+
+                    <DataGridTextColumn Header="Film"
+                                        Binding="{Binding Movie.Title}"/>
+
+                    <DataGridTextColumn Header="Sal"
+                                        Binding="{Binding TheaterHall.Name}"/>
+
+                    <DataGridTextColumn Header="Start"
+                                        Binding="{Binding StartTime,
+                                                  StringFormat=dd-MM-yyyy HH:mm}"/>
+
+                    <DataGridTextColumn Header="Slut"
+                                        Binding="{Binding EndTime,
+                                                  StringFormat=HH:mm}"/>
+
+                </DataGrid.Columns>
+
+            </DataGrid>
 
             <Button Content="Tilbage"
                     Height="40"
