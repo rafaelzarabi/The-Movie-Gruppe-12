@@ -24,6 +24,8 @@ namespace The_Movie_Gruppe_12.Models
             return StartTime.AddMinutes(
                 Movie.Duration + advertisementTime + cleaningTime);
         }
+        // Vi bruger dette for at vise sluttidspunktet i selve UI'et
+        public DateTime EndTime => CalculateEndTime();
 
 
         public int FreeSeats()
