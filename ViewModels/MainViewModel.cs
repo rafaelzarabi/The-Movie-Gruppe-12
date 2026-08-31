@@ -3,11 +3,17 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using The_Movie_Gruppe_12.Models;
 using System.Windows;
+using The_Movie_Gruppe_12.Services;
+using System.Collections.Generic;
+using System.Linq;
+
+using System.Reflection;
 
 namespace The_Movie_Gruppe_12.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
+        private FileService _fileService = new FileService();
 
         private Movie _movie = new Movie();
 
@@ -168,7 +174,7 @@ namespace The_Movie_Gruppe_12.ViewModels
 
         public ICommand BackToMenuCommand { get; }
 
-
+         //CONSTRUCTOR
         public MainViewModel()
         {
             ShowRegisterMovieCommand =
@@ -253,7 +259,48 @@ namespace The_Movie_Gruppe_12.ViewModels
             Cinemas.Add(cinema3);
             
             SelectedCinema = Cinemas[0];
+
+            Movies = new ObservableCollection<Movie>(
+    _fileService.LoadMovies());
+
+            List<ScreeningData> screeningDataList =
+                _fileService.LoadScreenings();
+
+            foreach (ScreeningData data in screeningDataList)
+            {
+                Movie movie = Movies.FirstOrDefault(
+                    m => m.Title == data.MovieTitle);
+
+                TheaterHall hall = null;
+
+                foreach (Cinema currentcinema in Cinemas)
+                {
+                    foreach (TheaterHall theaterHall in cinema.TheaterHalls)
+                    {
+                        if (theaterHall.Name == data.TheaterHallName)
+                        {
+                            hall = theaterHall;
+                        }
+                    }
+                }
+
+                if (movie != null && hall != null)
+                {
+                    Screening screening = new Screening
+                    {
+                        Movie = movie,
+                        TheaterHall = hall,
+                        StartTime = data.StartTime
+                    };
+
+                    Screenings.Add(screening);
+                    hall.Screenings.Add(screening);
+                }
+            }
+
         }
+
+        
 
 
         
@@ -314,6 +361,8 @@ namespace The_Movie_Gruppe_12.ViewModels
         {
             Movies.Add(Movie);
 
+            _fileService.SaveMovies(new List<Movie>(Movies));
+
             Movie = new Movie();
 
             IsMainMenuVisible = false;
@@ -356,6 +405,9 @@ namespace The_Movie_Gruppe_12.ViewModels
             Screenings.Add(newScreening);
 
             SelectedTheaterHall.Screenings.Add(newScreening);
+
+            _fileService.SaveScreenings(new List<Screening>(Screenings));
+
 
             ShowProgram(null);
         }
