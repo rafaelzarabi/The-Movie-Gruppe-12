@@ -2,12 +2,14 @@
 using System.Windows.Input;
 using The_Movie_Gruppe_12.Models;
 using System;
+using The_Movie_Gruppe_12.Services;
 
 namespace The_Movie_Gruppe_12.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
         private Movie _movie = new Movie();
+        private readonly FileService _fileService = new FileService();
 
         public Movie Movie
         {
@@ -27,6 +29,9 @@ namespace The_Movie_Gruppe_12.ViewModels
 
         public ObservableCollection<Reservation> Reservations { get; set; }
             = new ObservableCollection<Reservation>();
+
+        public ObservableCollection<Cinema> Cinemas { get; set; }
+            = new ObservableCollection<Cinema>();
 
 
         private bool _isMainMenuVisible = true;
@@ -86,7 +91,9 @@ namespace The_Movie_Gruppe_12.ViewModels
             RegisterMovieCommand =
                 new RelayCommand(RegisterMovie);
             BackToMenuCommand =
-    new RelayCommand(BackToMenu);
+                new RelayCommand(BackToMenu);
+
+            LoadData();
         }
 
 
@@ -108,8 +115,10 @@ namespace The_Movie_Gruppe_12.ViewModels
         {
             Movies.Add(Movie);
 
-
             Movie = new Movie();
+
+            SaveData();
+
             IsMainMenuVisible = false;
             IsRegisterMovieVisible = false;
             IsMovieOverviewVisible = true;
@@ -122,27 +131,45 @@ namespace The_Movie_Gruppe_12.ViewModels
             IsMovieOverviewVisible = false;
         }
 
-        public Screening CreateScreening(Movie movie, TheaterHall theaterHall, DateTime startTime)
+        public Screening? CreateScreening(
+         Movie movie,
+         TheaterHall theaterHall,
+         DateTime startTime)
         {
-            Screening screening = new Screening
+            Screening newScreening = new Screening
             {
                 Movie = movie,
                 TheaterHall = theaterHall,
                 StartTime = startTime
             };
 
-            Screenings.Add(screening);
+            foreach (Screening existingScreening in theaterHall.Screenings)
+            {
+                bool overlaps =
+                    newScreening.StartTime < existingScreening.CalculateEndTime()
+                    &&
+                    newScreening.CalculateEndTime() > existingScreening.StartTime;
 
-            theaterHall.Screenings.Add(screening);
+                if (overlaps)
+                {
+                    return null;
+                }
+            }
 
-            return screening;
+            Screenings.Add(newScreening);
+
+            theaterHall.Screenings.Add(newScreening);
+
+            SaveData();
+
+            return newScreening;
         }
 
         public Reservation? CreateReservation(
-            Screening screening,
-            string email,
-            string phone,
-            int numberOfTickets)
+           Screening screening,
+           string email,
+           string phone,
+           int numberOfTickets)
         {
             if (!screening.CanReserve(numberOfTickets))
             {
@@ -158,9 +185,31 @@ namespace The_Movie_Gruppe_12.ViewModels
             };
 
             screening.Reservations.Add(reservation);
+
             Reservations.Add(reservation);
 
+            SaveData();
+
             return reservation;
+        }
+
+        public void SaveData()
+        {
+            _fileService.SaveData(
+                Movies,
+                Cinemas,
+                Screenings,
+                Reservations);
+        }
+
+        private void LoadData()
+        {
+            AppData data = _fileService.LoadData();
+
+            Movies = new ObservableCollection<Movie>(data.Movies);
+            Cinemas = new ObservableCollection<Cinema>(data.Cinemas);
+            Screenings = new ObservableCollection<Screening>(data.Screenings);
+            Reservations = new ObservableCollection<Reservation>(data.Reservations);
         }
 
     }

@@ -9,7 +9,8 @@ namespace The_Movie_Gruppe_12.Views
         {
             InitializeComponent();
 
-            DataContext = new MovieViewModel();
+            DataContext = new MainViewModel();
         }
+
     }
 }
